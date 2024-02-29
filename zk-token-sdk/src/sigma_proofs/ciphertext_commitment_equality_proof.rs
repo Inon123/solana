@@ -89,9 +89,9 @@ impl CiphertextCommitmentEqualityProof {
         let r = opening.get_scalar();
 
         // generate random masking factors that also serves as nonces
-        let mut y_s = Scalar::random(&mut OsRng);
-        let mut y_x = Scalar::random(&mut OsRng);
-        let mut y_r = Scalar::random(&mut OsRng);
+        let mut y_s = Scalar::random(&mut rand_core::OsRng);
+        let mut y_x = Scalar::random(&mut rand_core::OsRng);
+        let mut y_r = Scalar::random(&mut rand_core::OsRng);
 
         let Y_0 = (&y_s * P_source).compress();
         let Y_1 =
@@ -177,7 +177,7 @@ impl CiphertextCommitmentEqualityProof {
             vec![
                 &self.z_s,           // z_s
                 &(-&c),              // -c
-                &(-&Scalar::one()),  // -identity
+                &(-&Scalar::ONE),  // -identity
                 &(&w * &self.z_x),   // w * z_x
                 &(&w * &self.z_s),   // w * z_s
                 &(&w_negated * &c),  // -w * c

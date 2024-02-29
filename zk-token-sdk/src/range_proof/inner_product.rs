@@ -15,6 +15,7 @@ use {
     merlin::Transcript,
     std::borrow::Borrow,
 };
+use subtle::CtOption;
 
 #[allow(non_snake_case)]
 #[derive(Clone)]
@@ -411,11 +412,20 @@ impl InnerProductProof {
         }
 
         let pos = 2 * lg_n * 32;
-        let a = Scalar::from_canonical_bytes(util::read32(&slice[pos..]))
-            .ok_or(RangeProofVerificationError::Deserialization)?;
-        let b = Scalar::from_canonical_bytes(util::read32(&slice[pos + 32..]))
-            .ok_or(RangeProofVerificationError::Deserialization)?;
+        let scalar_result_a = Scalar::from_canonical_bytes(util::read32(&slice[pos..]));
 
+        let a = if scalar_result_a.is_some().into() {
+            scalar_result_a.unwrap()
+        } else {
+            return Err(RangeProofVerificationError::Deserialization);
+        };
+        let scalar_result_b = Scalar::from_canonical_bytes(util::read32(&slice[pos..]));
+
+        let b = if scalar_result_b.is_some().into() {
+            scalar_result_b.unwrap()
+        } else {
+            return Err(RangeProofVerificationError::Deserialization);
+        };
         Ok(InnerProductProof { L_vec, R_vec, a, b })
     }
 }
@@ -438,13 +448,13 @@ mod tests {
 
         let Q = RistrettoPoint::hash_from_bytes::<Sha3_512>(b"test point");
 
-        let a: Vec<_> = (0..n).map(|_| Scalar::random(&mut OsRng)).collect();
-        let b: Vec<_> = (0..n).map(|_| Scalar::random(&mut OsRng)).collect();
+        let a: Vec<_> = (0..n).map(|_| Scalar::random(&mut rand_core::OsRng)).collect();
+        let b: Vec<_> = (0..n).map(|_| Scalar::random(&mut rand_core::OsRng)).collect();
         let c = util::inner_product(&a, &b).unwrap();
 
-        let G_factors: Vec<Scalar> = iter::repeat(Scalar::one()).take(n).collect();
+        let G_factors: Vec<Scalar> = iter::repeat(Scalar::ONE).take(n).collect();
 
-        let y_inv = Scalar::random(&mut OsRng);
+        let y_inv = Scalar::random(&mut rand_core::OsRng);
         let H_factors: Vec<Scalar> = util::exp_iter(y_inv).take(n).collect();
 
         // P would be determined upstream, but we need a correct P to check the proof.
@@ -479,7 +489,7 @@ mod tests {
         assert!(proof
             .verify(
                 n,
-                iter::repeat(Scalar::one()).take(n),
+                iter::repeat(Scalar::ONE).take(n),
                 util::exp_iter(y_inv).take(n),
                 &P,
                 &Q,
@@ -494,7 +504,7 @@ mod tests {
         assert!(proof
             .verify(
                 n,
-                iter::repeat(Scalar::one()).take(n),
+                iter::repeat(Scalar::ONE).take(n),
                 util::exp_iter(y_inv).take(n),
                 &P,
                 &Q,

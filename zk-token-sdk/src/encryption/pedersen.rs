@@ -86,7 +86,7 @@ impl PedersenOpening {
 
     #[cfg(not(target_os = "solana"))]
     pub fn new_rand() -> Self {
-        PedersenOpening(Scalar::random(&mut OsRng))
+        PedersenOpening(Scalar::random(&mut rand_core::OsRng))
     }
 
     pub fn as_bytes(&self) -> &[u8; PEDERSEN_OPENING_LEN] {
@@ -99,7 +99,7 @@ impl PedersenOpening {
 
     pub fn from_bytes(bytes: &[u8]) -> Option<PedersenOpening> {
         match bytes.try_into() {
-            Ok(bytes) => Scalar::from_canonical_bytes(bytes).map(PedersenOpening),
+            Ok(bytes) => Scalar::from_canonical_bytes(bytes).map(PedersenOpening).into(),
             _ => None,
         }
     }
@@ -194,7 +194,7 @@ impl PedersenCommitment {
         }
 
         Some(PedersenCommitment(
-            CompressedRistretto::from_slice(bytes).decompress()?,
+            CompressedRistretto::from_slice(bytes).expect("inon").decompress()?,
         ))
     }
 }
@@ -264,7 +264,7 @@ mod tests {
         let amount_0: u64 = 77;
         let amount_1: u64 = 57;
 
-        let rng = &mut OsRng;
+        let rng = &mut rand_core::OsRng;
         let opening_0 = PedersenOpening(Scalar::random(rng));
         let opening_1 = PedersenOpening(Scalar::random(rng));
 
@@ -280,7 +280,7 @@ mod tests {
         let amount_0: u64 = 77;
         let amount_1: u64 = 57;
 
-        let rng = &mut OsRng;
+        let rng = &mut rand_core::OsRng;
         let opening_0 = PedersenOpening(Scalar::random(rng));
         let opening_1 = PedersenOpening(Scalar::random(rng));
 
@@ -320,7 +320,7 @@ mod tests {
 
     #[test]
     fn test_pedersen_opening_bytes() {
-        let opening = PedersenOpening(Scalar::random(&mut OsRng));
+        let opening = PedersenOpening(Scalar::random(&mut rand_core::OsRng));
 
         let encoded = opening.to_bytes();
         let decoded = PedersenOpening::from_bytes(&encoded).unwrap();
@@ -344,7 +344,7 @@ mod tests {
 
     #[test]
     fn test_serde_pedersen_opening() {
-        let opening = PedersenOpening(Scalar::random(&mut OsRng));
+        let opening = PedersenOpening(Scalar::random(&mut rand_core::OsRng));
 
         let encoded = bincode::serialize(&opening).unwrap();
         let decoded: PedersenOpening = bincode::deserialize(&encoded).unwrap();

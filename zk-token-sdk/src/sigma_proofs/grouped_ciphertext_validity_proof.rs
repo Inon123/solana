@@ -86,8 +86,8 @@ impl GroupedCiphertext2HandlesValidityProof {
         let r = opening.get_scalar();
 
         // generate random masking factors that also serves as nonces
-        let mut y_r = Scalar::random(&mut OsRng);
-        let mut y_x = Scalar::random(&mut OsRng);
+        let mut y_r = Scalar::random(&mut rand_core::OsRng);
+        let mut y_x = Scalar::random(&mut rand_core::OsRng);
 
         let Y_0 = RistrettoPoint::multiscalar_mul(vec![&y_r, &y_x], vec![&(*H), &(*G)]).compress();
         let Y_1 = (&y_r * P_dest).compress();
@@ -172,7 +172,7 @@ impl GroupedCiphertext2HandlesValidityProof {
                 &self.z_r,           // z_r
                 &self.z_x,           // z_x
                 &(-&c),              // -c
-                &-(&Scalar::one()),  // -identity
+                &-(&Scalar::ONE),  // -identity
                 &(&w * &self.z_r),   // w * z_r
                 &(&w_negated * &c),  // -w * c
                 &w_negated,          // -w

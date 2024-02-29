@@ -94,7 +94,7 @@ impl ElGamal {
     #[allow(non_snake_case)]
     fn keygen() -> ElGamalKeypair {
         // secret scalar should be non-zero except with negligible probability
-        let mut s = Scalar::random(&mut OsRng);
+        let mut s = Scalar::random(&mut rand_core::OsRng);
         let keypair = Self::keygen_with_scalar(&s);
 
         s.zeroize();
@@ -334,7 +334,7 @@ impl ElGamalPubkey {
     #[allow(non_snake_case)]
     pub fn new(secret: &ElGamalSecretKey) -> Self {
         let s = &secret.0;
-        assert!(s != &Scalar::zero());
+        assert!(s != &Scalar::ZERO);
 
         ElGamalPubkey(s.invert() * &(*H))
     }
@@ -353,7 +353,7 @@ impl ElGamalPubkey {
         }
 
         Some(ElGamalPubkey(
-            CompressedRistretto::from_slice(bytes).decompress()?,
+            CompressedRistretto::from_slice(bytes).unwrap().decompress()?,
         ))
     }
 
@@ -449,7 +449,7 @@ impl ElGamalSecretKey {
     ///
     /// This function is randomized. It internally samples a scalar element using `OsRng`.
     pub fn new_rand() -> Self {
-        ElGamalSecretKey(Scalar::random(&mut OsRng))
+        ElGamalSecretKey(Scalar::random(&mut rand_core::OsRng))
     }
 
     /// Derive an ElGamal secret key from an entropy seed.
@@ -493,7 +493,7 @@ impl ElGamalSecretKey {
 
     pub fn from_bytes(bytes: &[u8]) -> Option<ElGamalSecretKey> {
         match bytes.try_into() {
-            Ok(bytes) => Scalar::from_canonical_bytes(bytes).map(ElGamalSecretKey),
+            Ok(bytes) => Scalar::from_canonical_bytes(bytes).map(ElGamalSecretKey).into(),
             _ => None,
         }
     }
@@ -716,7 +716,7 @@ impl DecryptHandle {
         }
 
         Some(DecryptHandle(
-            CompressedRistretto::from_slice(bytes).decompress()?,
+            CompressedRistretto::from_slice(bytes).unwrap().decompress()?,
         ))
     }
 }

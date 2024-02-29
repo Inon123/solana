@@ -167,10 +167,10 @@ impl FeeSigmaProof {
         let C_delta = delta_commitment.get_point();
         let C_claimed = claimed_commitment.get_point();
 
-        let z_x = Scalar::random(&mut OsRng);
-        let z_delta = Scalar::random(&mut OsRng);
-        let z_claimed = Scalar::random(&mut OsRng);
-        let c_equality = Scalar::random(&mut OsRng);
+        let z_x = Scalar::random(&mut rand_core::OsRng);
+        let z_delta = Scalar::random(&mut rand_core::OsRng);
+        let z_claimed = Scalar::random(&mut rand_core::OsRng);
+        let c_equality = Scalar::random(&mut rand_core::OsRng);
 
         let Y_delta = RistrettoPoint::multiscalar_mul(
             vec![z_x, z_delta, -c_equality],
@@ -195,7 +195,7 @@ impl FeeSigmaProof {
         // generate max proof
         let r_fee = fee_opening.get_scalar();
 
-        let y_max_proof = Scalar::random(&mut OsRng);
+        let y_max_proof = Scalar::random(&mut rand_core::OsRng);
         let Y_max_proof = (y_max_proof * &(*H)).compress();
 
         transcript.append_point(b"Y_max_proof", &Y_max_proof);
@@ -241,8 +241,8 @@ impl FeeSigmaProof {
         let m = Scalar::from(max_fee);
         let C_fee = fee_commitment.get_point();
 
-        let z_max_proof = Scalar::random(&mut OsRng);
-        let c_max_proof = Scalar::random(&mut OsRng); // random challenge
+        let z_max_proof = Scalar::random(&mut rand_core::OsRng);
+        let c_max_proof = Scalar::random(&mut rand_core::OsRng); // random challenge
 
         // solve for Y_max in the verification algebraic relation
         let Y_max_proof = RistrettoPoint::multiscalar_mul(
@@ -263,9 +263,9 @@ impl FeeSigmaProof {
         let r_delta = delta_opening.get_scalar();
         let r_claimed = claimed_opening.get_scalar();
 
-        let y_x = Scalar::random(&mut OsRng);
-        let y_delta = Scalar::random(&mut OsRng);
-        let y_claimed = Scalar::random(&mut OsRng);
+        let y_x = Scalar::random(&mut rand_core::OsRng);
+        let y_delta = Scalar::random(&mut rand_core::OsRng);
+        let y_claimed = Scalar::random(&mut rand_core::OsRng);
 
         let Y_delta =
             RistrettoPoint::multiscalar_mul(vec![y_x, y_delta], vec![&(*G), &(*H)]).compress();
@@ -358,7 +358,7 @@ impl FeeSigmaProof {
                 c_max_proof,
                 -c_max_proof * m,
                 -z_max,
-                Scalar::one(),
+                Scalar::ONE,
                 w * z_x,
                 w * z_delta_real,
                 -w * c_equality,
