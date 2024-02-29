@@ -28,10 +28,13 @@ use {
 fn ristretto_point_from_optional_slice(
     optional_slice: Option<&[u8]>,
 ) -> Result<CompressedRistretto, SigmaProofVerificationError> {
-    optional_slice
+    let scalar = optional_slice
         .and_then(|slice| (slice.len() == RISTRETTO_POINT_LEN).then_some(slice))
-        .map(CompressedRistretto::from_slice)
-        .ok_or(SigmaProofVerificationError::Deserialization)
+        .map(CompressedRistretto::from_slice);
+    if scalar.is_some().into() {
+        return Ok(scalar.unwrap().unwrap());
+    }
+    Err(SigmaProofVerificationError::Deserialization)
 }
 
 /// Deserializes an optional slice of bytes to a scalar.
@@ -42,9 +45,12 @@ fn ristretto_point_from_optional_slice(
 fn canonical_scalar_from_optional_slice(
     optional_slice: Option<&[u8]>,
 ) -> Result<Scalar, SigmaProofVerificationError> {
-    optional_slice
+    let scalar = optional_slice
         .and_then(|slice| (slice.len() == SCALAR_LEN).then_some(slice)) // if chunk is the wrong length, convert to None
         .and_then(|slice| slice.try_into().ok()) // convert to array
-        .and_then(Scalar::from_canonical_bytes)
-        .ok_or(SigmaProofVerificationError::Deserialization)
+        .map(Scalar::from_canonical_bytes);
+    if scalar.is_some().into() {
+        return Ok(scalar.unwrap().unwrap());
+    }
+    Err(SigmaProofVerificationError::Deserialization)
 }

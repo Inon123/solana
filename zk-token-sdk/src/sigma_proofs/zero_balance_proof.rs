@@ -74,7 +74,7 @@ impl ZeroBalanceProof {
         let D = ciphertext.handle.get_point();
 
         // generate a random masking factor that also serves as a nonce
-        let mut y = Scalar::random(&mut OsRng);
+        let mut y = Scalar::random(&mut rand_core::OsRng);
         let Y_P = (&y * P).compress();
         let Y_D = (&y * D).compress();
 
@@ -136,7 +136,7 @@ impl ZeroBalanceProof {
             vec![
                 &self.z,            // z
                 &(-&c),             // -c
-                &(-&Scalar::one()), // -identity
+                &(-&Scalar::ONE), // -identity
                 &(&w * &self.z),    // w * z
                 &(&w_negated * &c), // -w * c
                 &w_negated,         // -w
